@@ -10,8 +10,10 @@ zero_based(array) = OffsetArray([array...], 0:length(array)-1)
 
 
 ## Part 1
-# Copy data
+# Copy data and change entries 1 and 2
 data1 = zero_based(data)
+data1[1] = 12
+data1[2] = 2
 
 # Functions
 function operate!(array::OffsetArray, index)
@@ -42,8 +44,6 @@ using Test
 @test operate!([1,9,10,3,2,3,11,0,99,30,40,50])==[3500,9,10,70,2,3,11,0,99,30,40,50]
 
 # Solve puzzle
-data1[1] = 12
-data1[2] = 2
 answer1 = get_answer1(data1)
 
 
