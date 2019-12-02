@@ -4,11 +4,14 @@ f = open("Day2Input")
 data = readdlm(f, ',', Int)
 close(f)
 
+# Zero-based-index arrays
+using OffsetArrays
+zero_based(array) = OffsetArray([array...], 0:length(array)-1)
+
 
 ## Part 1
-# Use zero-based indexing
-using OffsetArrays
-data1 = OffsetArray([data...], 0:length(data)-1)
+# Copy data
+data1 = zero_based(data)
 
 # Functions
 function operate!(array::OffsetArray, index)
@@ -26,7 +29,9 @@ function operate!(array::OffsetArray, index)
     operate!(array, index+4)
 end
 operate!(array::OffsetArray) = operate!(array, 0)
-operate!(array) = [operate!(OffsetArray([array...], 0:length(array)-1))...]
+operate!(array) = [operate!(zero_based(array))...]
+
+get_answer1(array::OffsetArray) = operate!(array)[0]
 
 # Test operate!
 using Test
@@ -39,16 +44,16 @@ using Test
 # Solve puzzle
 data1[1] = 12
 data1[2] = 2
-answer1 = operate!(data1)
+answer1 = get_answer1(data1)
 
 
 
 ## Part 2
-function tryoperations(data)
-    d = copy(data)
+function get_answer2(array)
+    d = copy(array)
     for noun in 0:99
         for verb in 0:99
-            d = copy(data)
+            d .= array
             d[1] = noun
             d[2] = verb
             if operate!(d)[0] == 19690720
@@ -58,5 +63,5 @@ function tryoperations(data)
     end
 end
 
-data2 = OffsetArray([data...], 0:length(data)-1)
-answer2 = tryoperations(data2)
+data2 = zero_based(data)
+answer2 = get_answer2(data2)
