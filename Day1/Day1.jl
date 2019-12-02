@@ -1,4 +1,4 @@
-# Read in data
+## Read in data
 f = open("Day1Input")
 lines = parse.(Int64, readlines(f))
 close(f)
@@ -15,7 +15,7 @@ using Test
 @test fuel(100756)==33583
 
 # Solve Puzzle
-sum(fuel.(lines))
+answer1 = sum(fuel.(lines))
 
 
 ## Part 2
@@ -36,4 +36,4 @@ fuel2(mass) = fuel2(mass,0)[2]
 @test fuel2(100756)==50346
 
 # Solve Puzzle
-sum(fuel2.(lines))
+answer2 = sum(fuel2.(lines))
