@@ -56,7 +56,7 @@ function get_answer2(array)
             d .= array
             d[1] = noun
             d[2] = verb
-            if operate!(d)[0] == 19690720
+            if get_answer1(d) == 19690720
                 return (100*noun + verb)
             end
         end
