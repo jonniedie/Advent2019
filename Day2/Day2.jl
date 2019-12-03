@@ -50,7 +50,7 @@ answer1 = get_answer1(data1)
 
 
 ## Part 2
-function get_answer2(array)
+function get_answer2(array::OffsetArray)
     d = copy(array)
     for noun in 0:99
         for verb in 0:99
