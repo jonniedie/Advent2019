@@ -1,4 +1,5 @@
-## Read in data
+## Init
+# Read in data
 using DelimitedFiles
 f = open("Day2Input")
 data = readdlm(f, ',', Int)
