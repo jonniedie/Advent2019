@@ -16,7 +16,7 @@ data1[1] = 12
 data1[2] = 2
 
 # Functions
-function operate!(array::OffsetArray, index)
+function operate!(array::OffsetArray, index=0)
     head = array[index]
     if head==1
         fun = (+)
@@ -30,8 +30,7 @@ function operate!(array::OffsetArray, index)
     array[array[index+3]] = fun(array[array[index+1]], array[array[index+2]])
     operate!(array, index+4)
 end
-operate!(array::OffsetArray) = operate!(array, 0)
-operate!(array) = [operate!(zero_based(array))...]
+operate!(array, args...) = [operate!(zero_based(array), args...)...]
 
 get_answer1(array::OffsetArray) = operate!(array)[0]
 
@@ -42,6 +41,7 @@ using Test
 @test operate!([2,4,4,5,99,0])==[2,4,4,5,99,9801]
 @test operate!([1,1,1,4,99,5,6,0,99])==[30,1,1,4,2,5,6,0,99]
 @test operate!([1,9,10,3,2,3,11,0,99,30,40,50])==[3500,9,10,70,2,3,11,0,99,30,40,50]
+@test get_answer1([1,9,10,3,2,3,11,0,99,30,40,50])==3500
 
 # Solve puzzle
 answer1 = get_answer1(data1)
