@@ -33,6 +33,7 @@ end
 operate!(array, args...) = [operate!(zero_based(array), args...)...]
 
 get_answer1(array::OffsetArray) = operate!(array)[0]
+get_answer1(array) = zero_based(array) |> get_answer
 
 # Test operate!
 using Test
