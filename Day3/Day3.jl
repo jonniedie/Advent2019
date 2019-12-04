@@ -90,7 +90,6 @@ function closest_intersection(c1::Circuit, c2::Circuit)
         end
     end
 end
-closest_intersection(c::Array{Circuit, 2}) = closest_intersection(c[1], c[2])
 
 # Test
 @test get_answer(test1) == 159
@@ -101,12 +100,12 @@ answer1 = get_answer(data)
 println("Part 1 answer:  ", answer1)
 
 
+
 ## Part 2
-# Get shortest intersection
+# Get shortest path intersection
 function closest_intersection(c1::Circuit, c2::Circuit)
     p1, p2 = c1.points[2:end], c2.points[2:end]
-
-    shortest = 999999999999
+    shortest = typemax(Int64)
     for (dist1, point1) in enumerate(p1)
         for (dist2, point2) in enumerate(p2)
             if point1 == point2
@@ -122,7 +121,6 @@ function closest_intersection(c1::Circuit, c2::Circuit)
     end
     return shortest + 2
 end
-closest_intersection(c::Array{Circuit, 2}) = closest_intersection(c[1], c[2])
 
 # Test
 @test get_answer(test1) == 610
