@@ -18,7 +18,7 @@ valid_password(diffed) = nondecreasing(diffed) && consecutive_pair(diffed)
 valid_password(data::Integer) = convert_data(data) |> valid_password
 
 # Answer getter
-get_answer(diffed) = filter(valid_password, diffed) |> length
+get_answer(data) = filter(valid_password, data) |> length
 
 
 
@@ -34,6 +34,7 @@ consecutive_pair(diffed) = any(diffed .== 0)
 # Get answer
 answer1 = get_answer(input)
 println("Part 1 answer:  ", answer1)
+
 
 
 ## Part 2
