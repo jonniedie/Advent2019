@@ -18,7 +18,7 @@ U98,R91,D20,R16,D67,R40,U7,R15,U6,R7"
 
 
 ## Data types
-# Point with x and y coordinates and the Manhattan distance from the origin
+# Point with x and y coordinates
 struct Point <: Number
     x
     y
@@ -82,11 +82,11 @@ get_answer(s::Array{<:AbstractString}) = get_answer(s...)
 ## Part 1
 # Get closest intersection
 function closest_intersection(c1::Circuit, c2::Circuit)
-    p1, p2 = (c1,c2) .|> (c -> sort(c.points, by=manhat))
-    dist = manhat.(p1)
-    for (i, point) in enumerate(p1)
-        if dist[i]!=0 && point in p2
-            return dist[i]
+    points1, points2 = (c1,c2) .|> (c -> sort(c.points, by=manhat))
+    distances = manhat.(points1)
+    for (dist, point) in zip(distances, points1)
+        if dist!=0 && point in points2
+            return dist
         end
     end
 end
