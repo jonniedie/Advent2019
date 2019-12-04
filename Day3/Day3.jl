@@ -1,14 +1,11 @@
-##Init
-
+## Setup
 using DelimitedFiles: readdlm
-import Base: +, promote_rule, convert, zero
+import Base: +, zero
 using Test: @test
 
-
-## Data definition
 # Puzzle data
 f = open("input")
-data = readdlm(f, ',', String, '\n')
+data = readdlm(f, '\n', String)
 close(f)
 
 # Test data
@@ -20,17 +17,12 @@ U98,R91,D20,R16,D67,R40,U7,R15,U6,R7"
 
 
 
-## Functions
-# Manhattan distance between origin and x,y point
-manhat(x, y) = abs(x) + abs(y)
-
+## Data types
 # Point with x and y coordinates and the Manhattan distance from the origin
 struct Point <: Number
     x
     y
-    dist
 end
-Point(x, y) = Point(x, y, manhat(x, y))
 
 # Parsed circuit direction
 struct Direction
@@ -63,54 +55,55 @@ function Circuit(d::Direction)
     return Circuit(Point.(x, y))
 end
 Circuit(s::AbstractString) = split(s, ',') .|> Direction .|> Circuit |> sum
-# Circuit(s::Array{AbstractString}) = Circuit.(s) |> sum
 
-# Define addition for Circuits to mean end-to-end appending
+
+
+## Functions
+# Addition for Circuits means end-to-end appending
 +(p1::Point, p2::Point) = Point(p1.x + p2.x, p1.y + p2.y)
 +(p::Point, c::Circuit) = Circuit(p .+ c.points)
 +(c::Circuit, p::Point) = p + c
 +(c1::Circuit, c2::Circuit) = Circuit(vcat(c1.points, (c1.points[end] + c2).points))
-+(c::Circuit, d::Direction) = c + Circuit(d)
-+(d1::Direction, d2::Direction) = Circuit(d1) + Circuit(d2)
 
-# Define the additive identity for Circuits
+# Get additive identity for Circuits
 zero(c::Circuit) = Circuit([Point(0,0)])
 
 # Manhattan distance for points
-manhat(p::Point) = p.dist
+manhat(x, y) = abs(x) + abs(y)
+manhat(p::Point) = manhat(p.x, p.y)
 
-circuits = sum(Direction.(data), dims=2)
+# Answer getter
+get_answer(s1::AbstractString, s2::AbstractString) = closest_intersection(Circuit(s1), Circuit(s2))
+get_answer(s::AbstractString) = get_answer(split(s, '\n')...)
+get_answer(s::Array{<:AbstractString}) = get_answer(s...)
+
 
 
 ## Part 1
 # Get closest intersection
 function closest_intersection(c1::Circuit, c2::Circuit)
     p1, p2 = (c1,c2) .|> (c -> sort(c.points, by=manhat))
-    for point in p1
-        if point.dist!=0 && point in p2
-            return point
+    dist = manhat.(p1)
+    for (i, point) in enumerate(p1)
+        if dist[i]!=0 && point in p2
+            return dist[i]
         end
     end
 end
 closest_intersection(c::Array{Circuit, 2}) = closest_intersection(c[1], c[2])
 
-# Answer getter
-get_answer1(c::Array{Circuit, 2}) = closest_intersection(c).dist
-get_answer1(s1::AbstractString, s2::AbstractString) = closest_intersection(Circuit(s1), Circuit(s2)).dist
-get_answer1(s::AbstractString) = get_answer1(split(s, '\n')...)
-
 # Test
-@test get_answer1(test1) == 159
-@test get_answer1(test2) == 135
+@test get_answer(test1) == 159
+@test get_answer(test2) == 135
 
 # Get answer
-answer1 = get_answer1(circuits)
-
+answer1 = get_answer(data)
+println("Part 1 answer:  ", answer1)
 
 
 ## Part 2
 # Get shortest intersection
-function shortest_intersection(c1::Circuit, c2::Circuit)
+function closest_intersection(c1::Circuit, c2::Circuit)
     p1, p2 = c1.points[2:end], c2.points[2:end]
 
     shortest = 999999999999
@@ -127,18 +120,14 @@ function shortest_intersection(c1::Circuit, c2::Circuit)
             break
         end
     end
-    return shortest
+    return shortest + 2
 end
-shortest_intersection(c::Array{Circuit, 2}) = shortest_intersection(c[1], c[2])
-
-# Answer getter TODO: Figure out why test version is off by 2
-get_answer2(c::Array{Circuit, 2}) = shortest_intersection(c)
-get_answer2(s1::AbstractString, s2::AbstractString) = shortest_intersection(Circuit(s1), Circuit(s2)) + 2
-get_answer2(s::AbstractString) = get_answer2(split(s, '\n')...)
+closest_intersection(c::Array{Circuit, 2}) = closest_intersection(c[1], c[2])
 
 # Test
-@test get_answer2(test1) == 610
-@test get_answer2(test2) == 410
+@test get_answer(test1) == 610
+@test get_answer(test2) == 410
 
-# Not sure why the test version needs
-answer2 = get_answer2(circuits)
+# Get answer
+answer2 = get_answer(data)
+println("Part 2 answer:  ", answer2)
