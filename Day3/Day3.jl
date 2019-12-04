@@ -130,7 +130,7 @@ function shortest_intersection(c1::Circuit, c2::Circuit)
 end
 shortest_intersection(c::Array{Circuit, 2}) = shortest_intersection(c[1], c[2])
 
-# Answer getter
+# Answer getter TODO: Figure out why test version is off by 2
 get_answer2(c::Array{Circuit, 2}) = shortest_intersection(c)
 get_answer2(s1::AbstractString, s2::AbstractString) = shortest_intersection(Circuit(s1), Circuit(s2)) + 2
 get_answer2(s::AbstractString) = get_answer2(split(s, '\n')...)
