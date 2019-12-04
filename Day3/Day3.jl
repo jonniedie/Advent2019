@@ -79,7 +79,7 @@ zero(c::Circuit) = Circuit([Point(0,0)])
 # Manhattan distance for points
 manhat(p::Point) = p.dist
 
-
+# circuits = sum(Direction.(data), dims=2)
 
 
 ## Part 1
@@ -103,8 +103,9 @@ get_answer1(s::AbstractString) = get_answer1(split(s, '\n')...)
 @test get_answer1(test1) == 159
 @test get_answer1(test2) == 135
 
-circuits = sum(Direction.(data), dims=2)
+# Get answer
 answer1 = get_answer1(circuits)
+
 
 
 ## Part 2
