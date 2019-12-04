@@ -79,7 +79,7 @@ zero(c::Circuit) = Circuit([Point(0,0)])
 # Manhattan distance for points
 manhat(p::Point) = p.dist
 
-# circuits = sum(Direction.(data), dims=2)
+circuits = sum(Direction.(data), dims=2)
 
 
 ## Part 1
