@@ -47,9 +47,9 @@ function Instruction(code::Integer)
     return Instruction(d[1] + 10*d[2], d[3:5]...)
 end
 
-function get_value(array, mode_type, value)
+function get_value(intcode, mode_type, value)
     if mode_type==0
-        return array[value]
+        return intcode[value]
     elseif mode_type==1
         return value
     else error("Invalid mode type $mode_type")
@@ -57,33 +57,33 @@ function get_value(array, mode_type, value)
 end
 
 # Run intcode machine
-function operate!(a::OffsetArray, input, i=0)
-    len = length(a)
+function operate!(intcode::OffsetArray, input, i=0)
+    len = length(intcode)
     count = 0
     while count<10000
-        head = Instruction(a[i])
+        head = Instruction(intcode[i])
         op = head.opcode
 
         if op != 3 && op != 99
-            val1 = get_value(a, head.p1, a[i+1])
+            val1 = get_value(intcode, head.p1, intcode[i+1])
         end
         if op in 1:2 || op in 5:8
-            val2 = get_value(a, head.p2, a[i+2])
+            val2 = get_value(intcode, head.p2, intcode[i+2])
         end
         if op in 1:2 || op in 7:8
-            store_address = a[i+3]
+            store_address = intcode[i+3]
         elseif op==3
-            store_address = a[i+1]
+            store_address = intcode[i+1]
         end
 
         if op == 1
-            a[store_address] = val1 + val2
+            intcode[store_address] = val1 + val2
             i += 4
         elseif op == 2
-            a[store_address] = val1 * val2
+            intcode[store_address] = val1 * val2
             i += 4
         elseif op == 3
-            a[store_address] = input
+            intcode[store_address] = input
             i += 2
         elseif op == 4
             return (val1, i+2)
@@ -92,20 +92,20 @@ function operate!(a::OffsetArray, input, i=0)
         elseif op == 6
             i = val1==0 ? val2 : i+3
         elseif op == 7
-            a[store_address] = val1 < val2
+            intcode[store_address] = val1 < val2
             i += 4
         elseif op == 8
-            a[store_address] = val1 == val2
+            intcode[store_address] = val1 == val2
             i += 4
         elseif op == 99
-            return a
+            return intcode
         else error("Invalid operation type $head")
         end
 
         count +=1
     end
-    error("Infinite loop! $(a[i:i+4]) $(a[0])")
+    error("Infinite loop! $(intcode[i:i+4]) $(intcode[0])")
 end
-operate!(array, input=1, i=0) = operate!(zero_based(array), input, i)
+operate!(intcode, input=1, i=0) = operate!(zero_based(intcode), input, i)
 
 end #Intcode
