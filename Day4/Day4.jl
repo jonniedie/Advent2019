@@ -7,15 +7,12 @@ input = 235741:706948
 
 
 ## Functions
-# Finite difference the digits in the data to see consecutive pairs
-convert_data(data) = digits(data) |> diff
-
 # Check if digits are nondecreasing
 nondecreasing(diffed) = all(diffed .≤ 0)
 
-# Check if password is valid
+# Check if password is valid. First convert integer to digit array and diff.
 valid_password(diffed) = nondecreasing(diffed) && consecutive_pair(diffed)
-valid_password(data::Integer) = convert_data(data) |> valid_password
+valid_password(data::Integer) = digits(data) |> diff |> valid_password
 
 # Answer getter
 get_answer(data) = filter(valid_password, data) |> length
