@@ -17,11 +17,20 @@ module InputRead
 
 using DelimitedFiles: readdlm
 
-export read_csv
+export read_csv, read_simple
 
+# Comma-separated text file read
 function read_csv(f_name)
     f = open(f_name)
     data = readdlm(f, ',', Int)
+    close(f)
+    return data
+end
+
+# Simple data reading function
+function read_data(f)
+    f = open(f)
+    data = readlines(f)
     close(f)
     return data
 end
