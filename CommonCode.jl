@@ -66,7 +66,8 @@ function get_value(intcode, mode_type, value)
 end
 
 # Run intcode machine
-function operate!(intcode::OffsetArray, input, i=0)
+function operate!(intcode::OffsetArray, inputs...; i=0)
+    inp_counter = 1
     len = length(intcode)
     count = 0
     while count<10000
@@ -92,7 +93,8 @@ function operate!(intcode::OffsetArray, input, i=0)
             intcode[store_address] = val1 * val2
             i += 4
         elseif op == 3
-            intcode[store_address] = input
+            intcode[store_address] = inputs[inp_counter]
+            inp_counter += 1
             i += 2
         elseif op == 4
             return (val1, i+2)
@@ -107,7 +109,7 @@ function operate!(intcode::OffsetArray, input, i=0)
             intcode[store_address] = val1 == val2
             i += 4
         elseif op == 99
-            return intcode
+            return (nothing, i)
         else error("Invalid operation type $head")
         end
 
@@ -115,6 +117,6 @@ function operate!(intcode::OffsetArray, input, i=0)
     end
     error("Infinite loop! $(intcode[i:i+4]) $(intcode[0])")
 end
-operate!(intcode, input=1, i=0) = operate!(zero_based(intcode), input, i)
+# operate!(intcode, input=1, i=0) = operate!(zero_based(intcode), input, i)
 
 end #Intcode
