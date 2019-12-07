@@ -18,12 +18,10 @@ amplifiers = repeat_amps(data)
 ## Functions
 # Answer getter
 function get_answer(amps::Array, phases)
-    temp_amps = copy(amps)
     seqs = permutations(phases) |> collect
     outputs = zeros(Int64, length(seqs))
     for (i, seq) in enumerate(seqs)
-        outputs[i] = amplify!(temp_amps, seq)
-        temp_amps = copy(amps)
+        outputs[i] = amplify!(copy(amps), seq)
     end
     return max(outputs...)
 end
