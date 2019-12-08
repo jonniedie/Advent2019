@@ -31,7 +31,6 @@ data = make_images(read_simple("input"), 25, 6)
 # Count occurences of a number in a matrix
 count_num(image, num) = count(x -> x == num, image)
 
-
 # Get count of non-zero entries and score for part 1
 function score_image(image)
     count1 = count_num(image, 1)
@@ -59,7 +58,9 @@ answer1 = get_answer(images)
 println("Part 1 answer: ", answer1)
 
 
+
 ## Part 2
+# Stack images with opaque pixels showing through transparent
 smash_pixels(top, bottom) = top==2 ? bottom : top
 smash_pixels(top::Array, bottom::Array) = smash_pixels.(top, bottom)
 
