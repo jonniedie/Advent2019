@@ -21,7 +21,7 @@ function get_answer(amps::Array, phases)
     seqs = permutations(phases) |> collect
     thrust = 0
     for seq in seqs
-        output = max(thrust, amplify!(copy(amps), seq))
+        thrust = max(thrust, amplify!(copy(amps), seq))
     end
     return thrust
 end
