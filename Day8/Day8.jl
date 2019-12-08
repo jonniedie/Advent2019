@@ -9,7 +9,6 @@ using .InputRead: read_simple
 # Convert long string of numbers to array of integers
 to_int(long_str) = parse.(Int8, split(long_str..., ""))
 
-
 # Turn 3-dimensional array into array of 2-dimensional arrays
 slice_images(images) = [images[:,:,i] for i in 1:size(images,3)]
 
@@ -22,7 +21,7 @@ make_images(data, w, h) = to_int(data) |>
 
 
 ## Get and process data
-data = make_images(read_simple("input"), 25, 6)
+images = make_images(read_simple("input"), 25, 6)
 
 
 
