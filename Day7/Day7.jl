@@ -19,7 +19,6 @@ amplifiers = repeat_amps(data)
 # Answer getter
 function get_answer(amps::Array, phases)
     seqs = permutations(phases) |> collect
-    outputs = zeros(Int64, length(seqs))
     thrust = 0
     for seq in seqs
         output = max(thrust, amplify!(copy(amps), seq))
