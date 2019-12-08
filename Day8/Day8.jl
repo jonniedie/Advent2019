@@ -39,14 +39,11 @@ end
 
 # Answer getter
 function get_answer(images)
-    last_count = 0
-    sz = size(images, 3)
-    out = 0
+    last_count, out = 0, 0
     for image in images
         count, score = score_image(image)
         if count > last_count
-            out = score
-            last_count = count
+            last_count, out = count, score
         end
     end
     return out
