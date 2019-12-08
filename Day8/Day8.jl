@@ -34,7 +34,7 @@ count_num(image, num) = count(x -> x == num, image)
 function score_image(image)
     count1 = count_num(image, 1)
     count2 = count_num(image, 2)
-    score = (count1 + count2, count1 * count2)
+    return (count1 + count2, count1 * count2)
 end
 
 # Answer getter
