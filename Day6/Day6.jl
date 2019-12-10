@@ -2,13 +2,15 @@
 # Import stuff
 include("../CommonCode.jl")
 using DelimitedFiles: readdlm
-using .InputRead: read_data
+using .InputRead: read_simple
 using Test: @test
 import Base: +, -
 
 
 # Get data
-data = read_data("input")
+data = read_simple("input")
+test_data1 = read_simple("test_input")
+test_data2 = read_simple("test_input2")
 
 
 ## Functions
@@ -67,8 +69,7 @@ get_answer(dict::Dict) = sum([to_COM(dict, d.first) for d in dict]).count
 get_answer(data) = combine_parents(data) |> get_answer
 
 # Test
-test_data = read_data("test_input")
-@test get_answer(test_data) == 42
+@test get_answer(test_data1) == 42
 
 # Get answer
 answer1 = get_answer(data)
@@ -84,8 +85,7 @@ function get_answer(dict::Dict)
 end
 
 # Test
-test_data = read_data("test_input2")
-@test get_answer(test_data) == 4
+@test get_answer(test_data2) == 4
 
 # Get answer
 answer2 = get_answer(data)
