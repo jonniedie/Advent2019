@@ -12,11 +12,18 @@ data = read_csv("Day2Input")
 
 ## Functions
 # Get answer for part 1 (also used in part 2)
-get_answer1(array::OffsetArray) = operate!(array)[0]
+function get_answer1(array::OffsetArray)
+    operate!(array)
+    return array[0]
+end
 get_answer1(array) = zero_based(array) |> get_answer1
 
 # Test operate! function
-test_operate!(input, output) = [operate!(input)...] == output
+function test_operate!(input, output)
+    input = zero_based(input)
+    operate!(input)
+    return [input...] == output
+end
 
 
 ## Part 1

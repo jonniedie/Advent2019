@@ -12,14 +12,7 @@ data = read_csv("input")
 
 ## Functions
 # Answer getter
-function get_answer(data::OffsetArray, input=1)
-    output = 0
-    index = 0
-    while output==0
-        output, index = operate!(data, input, index)
-    end
-    return isa(output, Nothing) ? 0 : output
-end
+get_answer(intcode::OffsetArray, input=1) = operate!(intcode, input)[1][end]
 get_answer(data, input=1) = get_answer(zero_based(data), input)
 
 # Test functions

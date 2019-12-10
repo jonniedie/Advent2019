@@ -19,11 +19,11 @@ amplifiers = repeat_amps(data)
 # Answer getter
 function get_answer(amps::Array, phases)
     seqs = permutations(phases) |> collect
-    thrust = 0
-    for seq in seqs
-        thrust = max(thrust, amplify!(copy(amps), seq))
+    outputs = zeros(Int64, length(seqs))
+    for (i, seq) in enumerate(seqs)
+        outputs[i] = amplify!(copy(amps), seq)
     end
-    return thrust
+    return max(outputs...)
 end
 
 
@@ -31,11 +31,11 @@ end
 ## Part 1
 # Open-loop amplification
 function amplify!(amps, seq::Array)
-    input = 0
+    input = [0]
     for (amp, phase) in zip(amps, seq)
-        input = operate!(amp, phase, input)[1]
+        input = operate!(amp, phase, input[end])[1]
     end
-    return input
+    return input[end]
 end
 
 # Test
@@ -47,22 +47,21 @@ println("Part 1 answer:  ", answer1)
 
 
 
-#Part 2
+## Part 2
 # Closed-loop amplification
 function amplify!(amps, seq::Array)
-    input = 0
+    input = [0]
     pointers = zeros(Int64, size(amps))
     last_answer = nothing
     for idx in eachindex(amps)
-        (input, pointers[idx]) = operate!(amps[idx], seq[idx], input, i=pointers[idx])
+        (input, pointers[idx]) = operate!(amps[idx], seq[idx], input[end], i=pointers[idx])
     end
-    while !isa(input, Nothing)
-        last_answer = input
+    while pointers[end] != -2
         for idx in eachindex(amps)
-            (input, pointers[idx]) = operate!(amps[idx], input, i=pointers[idx])
+            (input, pointers[idx]) = operate!(amps[idx], input[end], i=pointers[idx])
         end
     end
-    return last_answer
+    return input[end]
 end
 
 # Test
