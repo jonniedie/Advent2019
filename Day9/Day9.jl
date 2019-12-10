@@ -22,6 +22,7 @@ get_answer(data) = operate!(Tape(data), 1)[1]
 
 # Get answer
 answer1 = get_answer(data)
+println("Part 1 answer: ", answer1)
 
 
 ## Part 2
@@ -30,3 +31,4 @@ get_answer(data) = operate!(Tape(data), 2)[1]
 
 # Get answer
 answer2 = get_answer(data)
+println("Part 2 answer: ", answer2)
