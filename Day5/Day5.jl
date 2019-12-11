@@ -1,9 +1,8 @@
 ## Setup
 # Import stuff
 include("../CommonCode.jl")
-using .ZeroBased: zero_based, OffsetArray
 using .InputRead: read_csv
-using .Intcode: operate!
+using .Intcode: operate!, Tape
 using Test
 
 # Get data
@@ -12,8 +11,8 @@ data = read_csv("input")
 
 ## Functions
 # Answer getter
-get_answer(intcode::OffsetArray, input=1) = operate!(intcode, input)[1][end]
-get_answer(data, input=1) = get_answer(zero_based(data), input)
+get_answer(intcode::Tape, input=1) = operate!(intcode, input)[end]
+get_answer(data, input=1) = get_answer(Tape(data), input)
 
 # Test functions
 test_eq_8_pos(num) = get_answer([3,9,8,9,10,9,4,9,99,-1,8], num)==1

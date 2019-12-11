@@ -4,6 +4,7 @@ include("../CommonCode.jl")
 using .InputRead: read_csv
 using .Intcode: operate!, Tape
 using OffsetArrays: OffsetArray
+using UnicodePlots: spy
 using Test: @test
 
 # Get Data
@@ -15,23 +16,29 @@ data = read_csv("input")
 # Robot type that stores visited squares
 mutable struct Robot
     intcode::Tape
-    pointer
     position    # (x,y)
     heading     # 0=>up, 1=>right, 2=>down, 3=>left
     visited::Dict
 end
-Robot(data, start=(0,0)) = Robot(Tape(data), 0, start, 0, Dict(start=>0))
+Robot(data, start=(0,0)) = Robot(Tape(data), start, 0, Dict(start=>0))
 
+scan_color(robot::Robot) =
+    haskey(robot.visited, robot.position) ? robot.visited[robot.position] : 0
+
+# Run intcode instructions in robot until halting
 function run_intcode!(robot::Robot, color=0)
-    (color, direction), robot.pointer  = operate!(robot.intcode, color, i=robot.pointer)
+    # Set initial color
     robot.visited[robot.position] = color
-    move!(robot, direction)
-    while robot.intcode[robot.pointer] != 99 && robot.pointer>0
-        color = haskey(robot.visited, robot.position) ? robot.visited[robot.position] : 0
-        (color, direction), robot.pointer  = operate!(robot.intcode, color, i=robot.pointer)
+
+    # Pointer at -2 means program has halted
+    while robot.intcode.pointer!=-2
+        color = scan_color(robot)
+        color, direction = operate!(robot.intcode, color)
         robot.visited[robot.position] = color
         move!(robot, direction)
     end
+
+    return robot
 end
 
 function move!(robot::Robot, direction)
@@ -39,9 +46,8 @@ function move!(robot::Robot, direction)
     go_forward!(robot)
 end
 
-function turn!(robot::Robot, direction)
-    robot.heading = direction==0 ? (robot.heading+3)%4 : (robot.heading+5)%4
-end
+turn!(robot::Robot, direction) =
+    setfield!(robot, :heading, (robot.heading + 3 + direction*2) % 4)
 
 function go_forward!(robot::Robot)
     move = rem(robot.heading, 2)==0 ? (0,1) : (1,0)
@@ -49,15 +55,28 @@ function go_forward!(robot::Robot)
     robot.position  = robot.position .+ move
 end
 
+# Show the grid painted by the robot
+function paint(points::Dict, sz=(-100, 100, -50, 50))
+    minx, maxx, miny, maxy = sz
+    xs, ys = minx:maxx, miny:maxy
+    canvas = OffsetArray(zeros(Int, maxx-minx+1, maxy-miny+1), xs, ys)
+    for x in xs
+        for y in ys
+            if haskey(points, (x,y))
+                canvas[x,y] = points[(x,y)]
+            end
+        end
+    end
+    reverse(permutedims(collect(canvas), [2,1]), dims=1) |> spy
+end
+paint(robot::Robot, args...) = paint(robot.visited, args...)
+
 
 
 ## Part 1
 # Answer getter
 get_answer(data) = Robot(data) |> get_answer
-function get_answer(robot::Robot)
-    run_intcode!(robot)
-    return length(robot.visited)
-end
+get_answer(robot::Robot) = run_intcode!(robot).visited |> length
 
 # Get answer
 robot = Robot(data)
@@ -66,20 +85,6 @@ answer1 = get_answer(robot)
 
 
 ## Part 2
-function paint(robot::Robot, sz=(-100, 100, -50, 50))
-    minx, maxx, miny, maxy = sz
-    xs, ys = minx:maxx, miny:maxy
-    canvas = OffsetArray(repeat(['░'], maxx-minx+1, maxy-miny+1), xs, ys)
-    for x in xs
-        for y in ys
-            if haskey(robot.visited, (x,y))
-                canvas[x,y] = robot.visited[(x,y)]==1 ? '█' : '░'
-            end
-        end
-    end
-    return reverse(permutedims(collect(canvas), [2,1]), dims=1)
-end
-
 # Answer getter
 function get_answer(robot::Robot)
     run_intcode!(robot, 1)

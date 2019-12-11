@@ -1,9 +1,8 @@
 ## Setup
 # Import stuff
 include("../CommonCode.jl")
-using .ZeroBased: zero_based, OffsetArray
 using .InputRead: read_csv
-using .Intcode: operate!
+using .Intcode: operate!, Tape
 using Test
 
 # Get data
@@ -12,23 +11,23 @@ data = read_csv("Day2Input")
 
 ## Functions
 # Get answer for part 1 (also used in part 2)
-function get_answer1(array::OffsetArray)
-    operate!(array)
-    return array[0]
+function get_answer1(intcode::Tape)
+    operate!(intcode)
+    return intcode[0]
 end
-get_answer1(array) = zero_based(array) |> get_answer1
+get_answer1(array) = Tape(array) |> get_answer1
 
 # Test operate! function
 function test_operate!(input, output)
-    input = zero_based(input)
-    operate!(input)
-    return [input...] == output
+    intcode = Tape(input)
+    operate!(intcode)
+    return collect(intcode.init_mem) == output
 end
 
 
 ## Part 1
 # Copy data and change entries 1 and 2
-data1 = zero_based(data)
+data1 = Tape(data)
 data1[1] = 12
 data1[2] = 2
 
@@ -45,11 +44,10 @@ answer1 = get_answer1(data1)
 
 
 ## Part 2
-function get_answer2(array::OffsetArray)
-    d = copy(array)
+function get_answer2(intcode::Tape)
     for noun in 0:99
         for verb in 0:99
-            d .= array
+            d = deepcopy(intcode)
             d[1] = noun
             d[2] = verb
             if get_answer1(d) == 19690720
@@ -59,5 +57,5 @@ function get_answer2(array::OffsetArray)
     end
 end
 
-data2 = zero_based(data)
+data2 = Tape(data)
 answer2 = get_answer2(data2)

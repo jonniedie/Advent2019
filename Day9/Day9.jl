@@ -16,9 +16,9 @@ test3_data = [104,1125899906842624,99]
 # Answer getter
 get_answer(data) = operate!(Tape(data), 1)[1]
 
-@test get_answer(test1_data) == test1_data
-@test (get_answer(test2_data)[1] |> digits |> length) == 16
-@test get_answer(test3_data)[1] == test3_data[2]
+@test operate!(Tape(test1_data), 1) == test1_data
+@test (get_answer(test2_data) |> digits |> length) == 16
+@test get_answer(test3_data) == test3_data[2]
 
 # Get answer
 answer1 = get_answer(data)

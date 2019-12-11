@@ -52,8 +52,9 @@ mutable struct Tape
     init_mem::OffsetArray
     mem_size
     extra_mem::Dict
+    pointer
 end
-Tape(data) = Tape(0, zero_based(data), length(data), Dict())
+Tape(data) = Tape(0, zero_based(data), length(data), Dict(), 0)
 
 function Base.getindex(intcode::Tape, i::Int)
     if i == -1
@@ -122,7 +123,7 @@ function get_address(intcode, mode_type, address)
 end
 
 # Run intcode machine
-function operate!(intcode::Union{OffsetArray, Tape}, inputs...; i=0)
+function operate!(intcode::Tape, inputs...)
 
     inp_counter = 1
     count = 0
@@ -130,66 +131,67 @@ function operate!(intcode::Union{OffsetArray, Tape}, inputs...; i=0)
 
     while true #count<100000
         # Get instructions
-        head = Instruction(intcode[i])
+        head = Instruction(intcode[intcode.pointer])
         op = head.opcode
 
         # Operation setup
         if op != 3 && op != 99
-            val1 = get_value(intcode, head.p1, intcode[i+1])
+            val1 = get_value(intcode, head.p1, intcode[intcode.pointer+1])
         end
 
         if op in 1:2 || op in 5:8
-            val2 = get_value(intcode, head.p2, intcode[i+2])
+            val2 = get_value(intcode, head.p2, intcode[intcode.pointer+2])
         end
 
         if op in 1:2 || op in 7:8
-            store_address = get_address(intcode, head.p3, intcode[i+3])
+            store_address = get_address(intcode, head.p3, intcode[intcode.pointer+3])
 
         elseif op==3
-            store_address = get_address(intcode, head.p1, intcode[i+1])
+            store_address = get_address(intcode, head.p1, intcode[intcode.pointer+1])
         end
 
         # Operations
         if op == 1
             intcode[store_address] = val1 + val2
-            i += 4
+            intcode.pointer += 4
 
         elseif op == 2
             intcode[store_address] = val1 * val2
-            i += 4
+            intcode.pointer += 4
 
         elseif op == 3
             if inp_counter > length(inputs)
-                return (output, i)
+                return output
             end
             intcode[store_address] = inputs[inp_counter]
             inp_counter += 1
-            i += 2
+            intcode.pointer += 2
 
         elseif op == 4
             push!(output, val1)
-            i += 2
+            intcode.pointer += 2
 
         elseif op == 5
-            i = val1==0 ? i+3 : val2
+            intcode.pointer = val1==0 ? intcode.pointer+3 : val2
 
         elseif op == 6
-            i = val1==0 ? val2 : i+3
+            intcode.pointer = val1==0 ? val2 : intcode.pointer+3
 
         elseif op == 7
             intcode[store_address] = val1 < val2
-            i += 4
+            intcode.pointer += 4
 
         elseif op == 8
             intcode[store_address] = val1 == val2
-            i += 4
+            intcode.pointer += 4
 
         elseif op==9
             intcode.rel_base += val1
-            i += 2
+            intcode.pointer += 2
 
         elseif op == 99
-            return (output, -2)
+            intcode.pointer = -2
+            return output
 
         else error("Invalid operation type $head")
         end
@@ -198,6 +200,6 @@ function operate!(intcode::Union{OffsetArray, Tape}, inputs...; i=0)
     end
     error("Infinite loop! $(intcode[i]) $(intcode[0])")
 end
-operate!(intcode, input=1, i=0) = operate!(zero_based(intcode), input, i)
+operate!(intcode, input=1) = operate!(zero_based(intcode), input)
 
 end #Intcode

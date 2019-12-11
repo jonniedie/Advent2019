@@ -1,13 +1,12 @@
 ## Setup
 # Import stuff
 include("../CommonCode.jl")
-using .ZeroBased: zero_based, OffsetArray
 using .InputRead: read_csv
-using .Intcode: operate!
+using .Intcode: operate!, Tape
 using Test: @test
 using Combinatorics: permutations
 
-repeat_amps(amp) = [zero_based(amp) for i in 1:5]
+repeat_amps(amp) = [Tape(copy(amp)) for i in 1:5]
 
 # Get data
 data = read_csv("input")
@@ -21,7 +20,7 @@ function get_answer(amps::Array, phases)
     seqs = permutations(phases) |> collect
     outputs = zeros(Int64, length(seqs))
     for (i, seq) in enumerate(seqs)
-        outputs[i] = amplify!(copy(amps), seq)
+        outputs[i] = amplify!(deepcopy(amps), seq)
     end
     return max(outputs...)
 end
@@ -31,11 +30,12 @@ end
 ## Part 1
 # Open-loop amplification
 function amplify!(amps, seq::Array)
-    input = [0]
+    input = 0
     for (amp, phase) in zip(amps, seq)
-        input = operate!(amp, phase, input[end])[1]
+        input = operate!(amp, phase, input)
+        input = input[end]
     end
-    return input[end]
+    return input
 end
 
 # Test
@@ -50,18 +50,19 @@ println("Part 1 answer:  ", answer1)
 ## Part 2
 # Closed-loop amplification
 function amplify!(amps, seq::Array)
-    input = [0]
-    pointers = zeros(Int64, size(amps))
+    input = 0
     last_answer = nothing
     for idx in eachindex(amps)
-        (input, pointers[idx]) = operate!(amps[idx], seq[idx], input[end], i=pointers[idx])
+        input = operate!(amps[idx], seq[idx], input)
+        input = input[end]
     end
-    while pointers[end] != -2
+    while amps[end].pointer != -2
         for idx in eachindex(amps)
-            (input, pointers[idx]) = operate!(amps[idx], input[end], i=pointers[idx])
+            input = operate!(amps[idx], input)
+            input = input[end]
         end
     end
-    return input[end]
+    return input
 end
 
 # Test
