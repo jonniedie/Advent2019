@@ -16,13 +16,14 @@ mutable struct Robot
     intcode::Tape
     pointer
     position
-    heading
+    heading # 0=>up, 1=>right, 2=>down, 3=>left
     visited::Dict
 end
-Robot(data) = Robot(Tape(data, (0,0), 'U', Dict((0,0)=>0)))
+Robot(data, start=(0,0)) = Robot(Tape(data, 0, start, 0, Dict(start=>0)))
 
 function move!(robot::Robot)
-    color, robot.pointer  = operate!(robot.intcode, robot.visited)
-    robot.visited[robot.position] = color
-
+    out, robot.pointer  = operate!(robot.intcode, robot.visited)
+    robot.visited[robot.position] = out[1]
+    robot.position = out[2]
+    robot.heading = out[2]==0 ? 
 end
