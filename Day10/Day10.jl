@@ -42,7 +42,7 @@ end
 
 
 ## Part 1
-# Block the view of occluded asteroids
+# Block the view of blocked asteroids
 function block_view!(field, station, asteroid)
     if station == asteroid
         return nothing
