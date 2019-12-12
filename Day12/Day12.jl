@@ -60,7 +60,7 @@ total_energy(moon::Moon) = potential_energy(moon) * kinetic_energy(moon)
 total_energy(moons::Array{<:Moon}) = total_energy.(moons) |> sum
 
 # Run simulation
-function simulate!(moons::Array{<:Moon}, stop_time)
+function simulate!(moons::Array{<:Moon}, stop_time=1)
     for t in 1:stop_time
         gravitate!(moons)
     end
@@ -86,15 +86,37 @@ println("Part 1 answer: ", answer1)
 
 
 ## Part 2
-same_state(moon1::Moon, moon2::Moon) = moon1.pos == moon2.pos &&
-                                       moon1.vel == moon2.vel
-function same_state(moons1::Array{<:Moon}, moons2::Array{<:Moon})
-    same_state.(moons1, moons2) |> all
+same_state(moon1::Moon, moon2::Moon, i) = moon1.pos[i] == moon2.pos[i] &&
+                                          moon1.vel[i] == moon2.vel[i]
+same_state(moons1::Array{<:Moon}, moons2::Array{<:Moon}, args...) =
+    same_state.(moons1, moons2, args...) |> all
+
+
+# Get period of repitition in each dimension
+function get_periods(moons::Array{<:Moon})
+    moons = deepcopy(moons)
+    init_moons = deepcopy(moons)
+    counter = 0
+    received_period = [false, false, false]
+    period = [0, 0, 0]
+    while !all(received_period)
+        simulate!(moons)
+        counter +=1
+        for i in 1:3
+            if !received_period[i] && same_state(moons, init_moons, i)
+                received_period[i] = true
+                period[i] = counter
+            end
+        end
+    end
+    return period
 end
 
-# Answer getter
-function get_answer(moons::Array{<:Moons})
-    these_moons = deepcopy(moons)
-    
+get_answer(moons::Array{<:Moon}) = get_periods(moons) |> lcm
 
-end
+# Test
+@test get_answer(test_moons) == 2772
+
+# Get answer
+answer2 = get_answer(moons)
+println("Part 2 answer: ", answer2)
