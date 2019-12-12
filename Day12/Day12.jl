@@ -1,6 +1,5 @@
 ## Setup
 # Import stuff
-using OffsetArrays: OffsetArray
 using Test: @test
 
 
