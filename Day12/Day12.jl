@@ -10,6 +10,7 @@ mutable struct Moon
     vel
 end
 Moon(; x=0, y=0, z=0) = Moon([x, y, z], [0, 0, 0])
+Moon() = error("That's no moon")
 
 # Get moons
 Io = Moon(x=1, y=4, z=4)
