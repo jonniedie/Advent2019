@@ -91,7 +91,6 @@ same_state(moon1::Moon, moon2::Moon, i) = moon1.pos[i] == moon2.pos[i] &&
 same_state(moons1::Array{<:Moon}, moons2::Array{<:Moon}, args...) =
     same_state.(moons1, moons2, args...) |> all
 
-
 # Get period of repitition in each dimension
 function get_periods(moons::Array{<:Moon})
     moons = deepcopy(moons)
@@ -112,6 +111,7 @@ function get_periods(moons::Array{<:Moon})
     return period
 end
 
+# Answer getter
 get_answer(moons::Array{<:Moon}) = get_periods(moons) |> lcm
 
 # Test
