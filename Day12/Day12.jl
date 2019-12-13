@@ -10,7 +10,10 @@ mutable struct Moon
     vel
 end
 Moon(; x=0, y=0, z=0) = Moon([x, y, z], [0, 0, 0])
-Moon() = error("That's no moon")
+Moon(nothing) = error("That's no moon")
+
+# Many moons
+MoonSystem = Array{<:Moon}
 
 # Get moons
 Io = Moon(x=1, y=4, z=4)
@@ -19,6 +22,7 @@ Ganymede = Moon(x=-15, y=-14, z=12)
 Callisto = Moon(x=-17, y=1, z=10)
 moons = [Io, Europa, Ganymede, Callisto]
 
+# Get test moons
 test_moons = [Moon(x=-1, y=0, z=2),
               Moon(x=2, y=-10, z=-7),
               Moon(x=4, y=-8, z=8),
@@ -27,52 +31,42 @@ test_moons = [Moon(x=-1, y=0, z=2),
 
 
 ## Functions
-# Update position
-update_position!(moon::Moon, dx) = (moon.pos .= moon.pos .+ dx)
-
-# Update velocity
-update_velocity!(moon::Moon, dv) = (moon.vel .= moon.vel .+ dv)
-
-# Update position and velocity
-function update_state!(moon::Moon, dv)
-    dx = update_velocity!(moon, dv)
-    update_position!(moon, dx)
+# Update moon states
+update_position!(moon::Moon, Δx) = (moon.pos .= moon.pos .+ Δx)
+update_velocity!(moon::Moon, Δv) = (moon.vel .= moon.vel .+ Δv)
+function update_state!(moon::Moon, Δv)
+    Δx = update_velocity!(moon, Δv)
+    update_position!(moon, Δx)
 end
 
-get_gravity(moon::Moon, other_moon::Moon) = sign.(other_moon.pos .- moon.pos)
-
 # Apply gravity and step simulation in time
-function gravitate!(moons::Array{<:Moon})
+function gravitate!(moons::MoonSystem)
     last_moons = deepcopy(moons)
     for moon in moons
-        dv = [0,0,0]
+        Δv = [0,0,0]
         for other_moon in last_moons
-            dv += get_gravity(moon, other_moon)
+            Δv += sign.(other_moon.pos .- moon.pos)
         end
-        update_state!(moon, dv)
+        update_state!(moon, Δv)
     end
 end
 
-# Energy
+# Run simulation
+simulate!(moons::MoonSystem, steps=1) = [gravitate!(moons) for t in 1:steps]
+
+# Get energy
 potential_energy(moon::Moon) = abs.(moon.pos) |> sum
 kinetic_energy(moon::Moon) = abs.(moon.vel) |> sum
 total_energy(moon::Moon) = potential_energy(moon) * kinetic_energy(moon)
-total_energy(moons::Array{<:Moon}) = total_energy.(moons) |> sum
-
-# Run simulation
-function simulate!(moons::Array{<:Moon}, stop_time=1)
-    for t in 1:stop_time
-        gravitate!(moons)
-    end
-end
+total_energy(moons::MoonSystem) = total_energy.(moons) |> sum
 
 
 
 ## Part 1
 # Answer getter
-function get_answer(moons::Array{<:Moon}, stop_time=1000)
+function get_answer(moons::MoonSystem, steps=1000)
     these_moons = deepcopy(moons)
-    simulate!(these_moons, stop_time)
+    simulate!(these_moons, steps)
     return total_energy(these_moons)
 end
 
@@ -86,33 +80,32 @@ println("Part 1 answer: ", answer1)
 
 
 ## Part 2
+# Check if system states are the same (in one dimension)
 same_state(moon1::Moon, moon2::Moon, i) = moon1.pos[i] == moon2.pos[i] &&
                                           moon1.vel[i] == moon2.vel[i]
-same_state(moons1::Array{<:Moon}, moons2::Array{<:Moon}, args...) =
+same_state(moons1::MoonSystem, moons2::MoonSystem, args...) =
     same_state.(moons1, moons2, args...) |> all
 
 # Get period of repitition in each dimension
-function get_periods(moons::Array{<:Moon})
+function get_periods(moons::MoonSystem)
     moons = deepcopy(moons)
     init_moons = deepcopy(moons)
-    counter = 0
-    received_period = [false, false, false]
-    period = [0, 0, 0]
-    while !all(received_period)
+    elapsed_time = 0
+    periods = [0, 0, 0]
+    while any(periods .== 0)
         simulate!(moons)
-        counter +=1
-        for i in 1:3
-            if !received_period[i] && same_state(moons, init_moons, i)
-                received_period[i] = true
-                period[i] = counter
+        elapsed_time +=1
+        for i in eachindex(periods)
+            if periods[i]==0 && same_state(moons, init_moons, i)
+                periods[i] = elapsed_time
             end
         end
     end
-    return period
+    return periods
 end
 
 # Answer getter
-get_answer(moons::Array{<:Moon}) = get_periods(moons) |> lcm
+get_answer(moons::MoonSystem) = get_periods(moons) |> lcm
 
 # Test
 @test get_answer(test_moons) == 2772

@@ -49,50 +49,64 @@ export operate!, Tape
 #   and uses a dict to add addresses that are out of memory
 mutable struct Tape
     rel_base
-    init_mem::OffsetArray
+    memory::OffsetArray
     mem_size
     extra_mem::Dict
     pointer
 end
 Tape(data) = Tape(0, zero_based(data), length(data), Dict(), 0)
 
+
+# Get value at position of intcode
 function Base.getindex(intcode::Tape, i::Int)
-    if i == -1
-        return intcode.rel_base
-    elseif 0 ≤ i < intcode.mem_size
-        return intcode.init_mem[i]
+
+    # If index is in memory, get value from there
+    if 0 ≤ i < intcode.mem_size
+        return intcode.memory[i]
+
+    # If index is in extra memory, get value from there
     elseif haskey(intcode.extra_mem, i)
         return intcode.extra_mem[i]
+
+    # Tape is zero everywhere else
     else
         return 0
     end
 end
+
 Base.getindex(intcode::Tape, i::UnitRange) = getindex.(intcode, i)
 
-function Base.setindex!(intcode::Tape, v, i::Int)
-    if i == -1
-        intcode.rel_base = v
-    elseif 0 ≤ i < intcode.mem_size
-        intcode.init_mem[i] = v
+
+# Set value at position of intcode
+function Base.setindex!(intcode::Tape, val, i::Int)
+
+    # If index is in memory, set value there
+    if 0 ≤ i < intcode.mem_size
+        intcode.memory[i] = val
+
+    # if index is outside of memory, set value in extra memory
     else
-        intcode.extra_mem[i] = v
+        intcode.extra_mem[i] = val
     end
     return nothing
 end
 
+
 # Parsed instructions for each operation
 struct Instruction
     opcode
-    p1
-    p2
-    p3
-end
-function Instruction(code::Integer)
-    d = digits(code, pad=5)
-    return Instruction(d[1] + 10*d[2], d[3:5]...)
+    p
 end
 
+function Instruction(code::Integer)
+    d = digits(code, pad=5)
+    return Instruction(d[1] + 10*d[2], d[3:5])
+end
+
+
+# Get value based on position/value mode type
 function get_value(intcode, mode_type, value)
+
     # Position mode
     if mode_type==0
         return intcode[value]
@@ -109,7 +123,10 @@ function get_value(intcode, mode_type, value)
     end
 end
 
+
+# Get either absolute or relative address
 function get_address(intcode, mode_type, address)
+
     # Not sure why these are both position mode
     if mode_type==0 || mode_type==1
         return address
@@ -122,33 +139,24 @@ function get_address(intcode, mode_type, address)
     end
 end
 
+
 # Run intcode machine
 function operate!(intcode::Tape, inputs...)
 
     inp_counter = 1
-    count = 0
     output = []
 
-    while true #count<100000
+    while true
         # Get instructions
         head = Instruction(intcode[intcode.pointer])
         op = head.opcode
 
-        # Operation setup
-        if op != 3 && op != 99
-            val1 = get_value(intcode, head.p1, intcode[intcode.pointer+1])
-        end
+        # Get values
+        val1, val2 = map(i -> get_value(intcode, head.p[i], intcode[intcode.pointer+i]), 1:2)
 
-        if op in 1:2 || op in 5:8
-            val2 = get_value(intcode, head.p2, intcode[intcode.pointer+2])
-        end
-
-        if op in 1:2 || op in 7:8
-            store_address = get_address(intcode, head.p3, intcode[intcode.pointer+3])
-
-        elseif op==3
-            store_address = get_address(intcode, head.p1, intcode[intcode.pointer+1])
-        end
+        # Get store address
+        add_idx = (op in 1:2 || op in 7:8) ? 3 : 1
+        store_address = get_address(intcode, head.p[add_idx], intcode[intcode.pointer+add_idx])
 
         # Operations
         if op == 1
@@ -195,10 +203,7 @@ function operate!(intcode::Tape, inputs...)
 
         else error("Invalid operation type $head")
         end
-
-        count +=1
     end
-    error("Infinite loop! $(intcode[i]) $(intcode[0])")
 end
 operate!(intcode, input=1) = operate!(zero_based(intcode), input)
 

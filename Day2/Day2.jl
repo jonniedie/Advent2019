@@ -21,7 +21,7 @@ get_answer1(array) = Tape(array) |> get_answer1
 function test_operate!(input, output)
     intcode = Tape(input)
     operate!(intcode)
-    return collect(intcode.init_mem) == output
+    return collect(intcode.memory) == output
 end
 
 
