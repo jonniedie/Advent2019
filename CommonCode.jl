@@ -49,12 +49,13 @@ export operate!, Tape
 #   and uses a dict to add addresses that are out of memory
 mutable struct Tape
     rel_base
+    init_mem
     memory::OffsetArray
     mem_size
     extra_mem::Dict
     pointer
 end
-Tape(data) = Tape(0, zero_based(data), length(data), Dict(), 0)
+Tape(data) = Tape(0, zero_based(data), zero_based(data), length(data), Dict(), 0)
 
 
 # Get value at position of intcode
@@ -91,6 +92,13 @@ function Base.setindex!(intcode::Tape, val, i::Int)
     return nothing
 end
 
+# Reset intcode machine
+function reset!(intcode::Tape)
+    intcode.rel_base = 0
+    intcode.memory .= intcode.init_mem
+    intcode.extra_mem = Dict()
+    intcode.pointer = 0
+end
 
 # Parsed instructions for each operation
 struct Instruction
