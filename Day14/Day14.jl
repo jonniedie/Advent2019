@@ -6,6 +6,7 @@ using Test: @test
 import Base: parse, *, vcat
 
 
+## Structs
 mutable struct Chemical
     coeff
     name
@@ -16,8 +17,12 @@ Formula = Tuple{Int64, Array{Chemical}}
 Formulas = Dict{String, Formula}
 
 
+
+## Functions
+# Read input file
 read_formulas(file) = read_simple(file) |> x -> parse(Formulas, x)
 
+# Parse text into chemicals and formulas
 parse(::Type{Chemical}, s) = Chemical(split(s, ' ')...)
 function parse(::Type{Formulas}, str::Array{<:AbstractString})
     formulas = Formulas()
@@ -31,10 +36,14 @@ function parse(::Type{Formulas}, str::Array{<:AbstractString})
     return formulas
 end
 
+# Reduce formula by inserting constituent formulas
 function reduce!(formulas::Formulas, key="FUEL", surplus=Dict())
+
     coeff, chemicals = formulas[key]
     chemicals = deepcopy(chemicals)
+
     while !all_ore(chemicals)
+        # Break off first chemical in list of fomula
         chemical = popfirst!(chemicals)
         name, needed = chemical.name, chemical.coeff
 
@@ -49,12 +58,14 @@ function reduce!(formulas::Formulas, key="FUEL", surplus=Dict())
             end
         end
 
+        # Ore is the base case
         if name=="ORE"
             push!(chemicals, chemical)
             chemicals = combine(chemicals)
             continue
         end
 
+        # Get constituent chemicals and calculate how many batches are needed
         (formula_coeff, chems_to_insert) = formulas[name]
         num_batches, leftover = batches_needed(needed, formula_coeff)
 
@@ -63,21 +74,17 @@ function reduce!(formulas::Formulas, key="FUEL", surplus=Dict())
         push!(chemicals, chems_to_insert...)
         chemicals = combine(chemicals)
 
+        # Add leftovers to surplus
         if haskey(surplus, name)
             surplus[name] += leftover
         else
             surplus[name] = leftover
         end
     end
-    # formulas[key] = (coeff, chemicals)
-    # if haskey(surplus, "ORE")
-    #     if surplus["ORE"] ≥ chemicals[1].coeff
-    #         surplus["ORE"] = surplus["ORE"] - chemicals[1].coeff
-    #     end
-    # end
     return chemicals
 end
 
+# Get number of batches to make needed amount of chemical
 function batches_needed(needed, batch_size)
     if needed==0
         return 0, 0
@@ -87,13 +94,16 @@ function batches_needed(needed, batch_size)
     return num_batches, leftover
 end
 
+# Define multiplication by a scalar for chemicals and formulas
 (*)(x::Number, c::Chemical) = Chemical(x * c.coeff, c.name)
 (*)(c::Chemical, x::Number) = x * c
 (*)(x::Number, f::Formula) = (x * f[1], x .* f[2])
 (*)(f::Formula, x::Number) = x * f
 
+# Check if chemicals in a list are all ore (probably not needed because of combine)
 all_ore(chemicals::Array{Chemical}) = all(map(x->x.name=="ORE", chemicals))
 
+# Combine like chemicals in a formula
 function combine(chemicals::Array{Chemical})
     new_chemicals = empty(chemicals)
     names = map(x->x.name, chemicals) |> unique
@@ -108,7 +118,6 @@ end
 
 
 ## Part 1
-
 # Answer getter
 get_answer1(file) = read_formulas(file) |> get_answer1
 get_answer1(formulas::Formulas) = reduce!(formulas)[1].coeff
@@ -123,7 +132,7 @@ println("Part 1 answer: ", answer1)
 
 
 ## Part 2
-# B R U T E   F O R C E
+# b r ̈u t   f o r c e
 function get_answer2(file, init_guess)
     formulas = read_formulas(file)
     fuel_formula = deepcopy(formulas["FUEL"])
