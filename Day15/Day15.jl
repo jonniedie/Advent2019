@@ -122,7 +122,7 @@ println("Part 1 answer: ", droid1.total_moves)
 function fill_maze(swarm::Swarm)
     last_droid = Droid()
     while !isempty(swarm)
-    last_droid = swarm[end]
+        last_droid = swarm[end]
         swarm = dispatch(swarm)
     end
     return last_droid
