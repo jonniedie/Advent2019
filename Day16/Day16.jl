@@ -24,40 +24,48 @@ PowerBoi(power; verbose=false) = PowerBoi(Power, verbose)
 # Raising a stripey boi to an integer power makes a power boi
 (^)(mat::StripeyBoi, int::Integer) = PowerBoi(int, mat.verbose)
 
+
 # Multiplication by a vector handles getting absolute value of ones place
 function (*)(mat::StripeyBoi, vect)
-    filt!(y) = filter!(x-> 0<x≤len, y)
+    # Filter out values that are out of vector index range
+    function filt!(x)
+        if x[1] < 0
+            popfirst!(x)
+        end
+        if x[end] > len
+            pop!(x)
+        end
+    end
 
+    # Set up
     len = length(vect)
     cumuvec = cumsum(vect)
     temp = zero(vect)
 
-    @threads for i in eachindex(vect)
-        if i==1
-            temp[i] = abs(sum(vect[1:4:len]) - sum(vect[3:4:len])) % 10
+    temp[1] = abs(sum(vect[1:4:len]) - sum(vect[3:4:len])) % 10
 
-        else
-            posidx = collect((3i-1):(4i):len-1)
-            negidx = collect((i-1):(4i):len-1)
+    # Multithread the for loop
+    @threads for i in 2:len
+        posidx = collect((3i-1):(4i):len-1)
+        negidx = collect((i-1):(4i):len-1)
 
-            posidx1 = negidx .+ i
-            negidx1 = posidx .+ i
+        posidx1 = negidx .+ i
+        negidx1 = posidx .+ i
 
-            endcheck = mod(div(len, i), 4) + 1
-            if endcheck==2
-                posidx1[end] = len
-            elseif endcheck==4
-                negidx1[end] = len
-            end
-
-            posidx = vcat(posidx, posidx1)
-            negidx = vcat(negidx, negidx1)
-
-            posidx = filt!(posidx)
-            negidx = filt!(negidx)
-
-            temp[i] = abs(sum(cumuvec[posidx]) - sum(cumuvec[negidx])) % 10
+        endcheck = mod(div(len, i), 4) + 1
+        if endcheck==2
+            posidx1[end] = len
+        elseif endcheck==4
+            negidx1[end] = len
         end
+
+        posidx = vcat(posidx, posidx1)
+        negidx = vcat(negidx, negidx1)
+
+        filt!(posidx)
+        filt!(negidx)
+
+        temp[i] = abs(sum(cumuvec[posidx]) - sum(cumuvec[negidx])) % 10
     end
     return temp
 end
