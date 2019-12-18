@@ -17,7 +17,7 @@ module InputRead
 
 using DelimitedFiles: readdlm
 
-export read_csv, read_simple
+export read_csv, read_simple, read_big, int2vector, vector2int
 
 # Comma-separated text file read
 function read_csv(f_name)
@@ -34,6 +34,18 @@ function read_simple(f)
     close(f)
     return data
 end
+
+# Read in single big integer
+function read_big(f)
+    f = open(f)
+    data = readlines(f)[1]
+    close(f)
+    return parse(BigInt, data)
+end
+
+# Convert vector of digits to integer and back
+int2vector(int) = digits(int) |> reverse!
+vector2int(vect) = reverse(vect) .* 10 .^ (0:length(vect)-1) |> sum
 
 end #InputRead
 
