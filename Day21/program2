@@ -1,0 +1,41 @@
+OR C J
+OR E J
+OR F J
+OR B T
+OR F T
+OR I T
+AND T J
+AND A J
+OR B T
+OR E T
+AND T J
+NOT T J
+AND D J
+RUN
+
+@
+ .??#?????  D & !A
+ #.?#.????  D & !B & !E
+ #.?##.??.  D & !B & !F & !I
+ ##.#..???  D & !C & !E & !F
+ ABCDEFGHI
+
+D ∧ (¬A ∨ (¬B ∧ ¬E) ∨ (¬B ∧ ¬F ∧ ¬I) ∨ (¬C ∧ ¬E ∧ ¬F))
+D ∧ (¬A ∨ ¬(B ∨ E) ∨ ¬(B ∨ F ∨ I) ∨ ¬(C ∨ E ∨ F))
+D ∧ ¬(A ∧ (B ∨ E) ∧ (B ∨ F ∨ I) ∧ (C ∨ E ∨ F))
+
+OR F T
+OR I T
+OR E T
+NOT T J
+NOT B T
+AND T J
+OR C T
+OR E T
+OR F T
+NOT T T
+OR T J
+NOT A T
+OR T J
+AND D J
+RUN
